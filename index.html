@@ -348,7 +348,13 @@ function vlsmC(){
 }
 function vlsmL(){
   let t=`Lösung\n${vBase}/${vBaseC}\n`;vSt.forEach(it=>{t+=`${it.name} (${it.h}H): /${it.c} → ${it.netz}/${it.c}\n BC: ${it.bc} | Hosts: ${hC(it.c)}\n`});document.getElementById('vlsmLo').innerHTML=t;document.getElementById('vlsmLo').style.display='block'
-  // Circle einfärben
+  // Circle mit Lösung einfärben + Inputs wieder aktiv
+  vSt.forEach((it,i)=>{
+    const ni=document.getElementById('vn'+i);const ci=document.getElementById('vc'+i)
+    if(ni)ni.disabled=false;if(ci)ci.disabled=false
+  })
+  // Lösung anzeigen, aber userSegs sichern für spätere Klicks
+  window._userSegs=vSegs.slice()
   vSegs=Array(64).fill(null)
   for(let i=0;i<64;i++){const st=i*4;const so=vSt.findIndex(it=>{const b=i2n(it.netz)&255;return st>=b&&st<b+hT(it.c)});if(so>=0)vSegs[i]=so}
   circState.res=null;circPaint()
@@ -406,7 +412,9 @@ function circPaint(){
 function circBind(){
   const c=document.querySelector('.pg.act canvas');if(!c)return;let drawing=false,mode=1
   const idx=e=>{const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width*CS-CX,y=(e.clientY-r.top)/r.height*CS-CX;const d=Math.hypot(x,y);if(d>CR||d<CI)return-1;return Math.floor(((Math.atan2(y,x)+Math.PI/2+2*Math.PI)%(2*Math.PI))/(2*Math.PI)*64)}
-  c.onpointerdown=e=>{const i=idx(e);if(i<0||circState.res)return;try{c.setPointerCapture(e.pointerId)}catch{};drawing=true;mode=vSegs[i]===vSel?0:1;vSegs[i]=mode?vSel:null;updCnt();circPaint()}
+  c.onpointerdown=e=>{
+    if(window._userSegs){vSegs=window._userSegs;window._userSegs=null;circState.res=null;updCnt();circPaint();return}
+    const i=idx(e);if(i<0||circState.res)return;try{c.setPointerCapture(e.pointerId)}catch{};drawing=true;mode=vSegs[i]===vSel?0:1;vSegs[i]=mode?vSel:null;updCnt();circPaint()}
   c.onpointermove=e=>{const i=idx(e);if(drawing&&i>=0&&!circState.res){vSegs[i]=mode?vSel:null;updCnt()}circState.hover=i;circPaint()}
   c.onpointerup=c.onpointercancel=()=>{drawing=false}
   c.onpointerleave=()=>{circState.hover=-1;circPaint()}
