@@ -330,7 +330,7 @@ function vlsmG(){
   vSt=locs.map(it=>{const c=c4h(it.h);const size=hT(c);const start=Math.ceil(ai/size)*size;const n=n2i(start);ai=start+size;return{...it,c,netz:n,bc:n2i(ai-1)}})
   let h=`<div style="font-size:12px;color:var(--accent);margin-bottom:6px"><b>${vBase}/${vBaseC}</b> · Größtes zuerst!</div>`
   vSt.forEach((it,i)=>{h+=`<div class="vb"><span class="vn" style="color:${cc[i%cc.length]}">${it.name}</span><span style="font-size:11px;color:var(--text2)">${it.h}H</span><input id="vn${i}" class="ip" placeholder="Netz" style="flex:2"><input id="vc${i}" class="vc" placeholder="/cidr"><span class="vr" id="vr${i}"></span></div>`})
-  a.innerHTML=h;vSegs=[];vSel=0
+  a.innerHTML=h;vSegs=[];vSel=0;window._userSegs=null
   setTimeout(vlsmCirc,50)
 }
 function vlsmC(){
@@ -343,7 +343,7 @@ function vlsmC(){
     if(oN&&oC){l.textContent='✓ ✓';l.style.color='var(--green)';p+=2}else{l.textContent=(oN?'':'✗ '+it.netz)+(oC?'':' /'+it.c);l.style.color='var(--red)'}
   })
   document.getElementById('sb').textContent=`${p}/${mx}`
-  if(vSegs.length>0)vlsmCircCheck()
+  circState.res=null;if(vSegs.length>0)vlsmCircCheck()
 }
 function vlsmL(){
   let t=`Lösung\n${vBase}/${vBaseC}\n`;vSt.forEach(it=>{t+=`${it.name} (${it.h}H): /${it.c} → ${it.netz}/${it.c}\n BC: ${it.bc} | Hosts: ${hC(it.c)}\n`});document.getElementById('vlsmLo').innerHTML=t;document.getElementById('vlsmLo').style.display='block'
@@ -352,8 +352,8 @@ function vlsmL(){
     const ni=document.getElementById('vn'+i);const ci=document.getElementById('vc'+i)
     if(ni)ni.disabled=false;if(ci)ci.disabled=false
   })
-  // Lösung anzeigen, aber userSegs sichern für spätere Klicks
-  window._userSegs=vSegs.slice()
+  // Lösung anzeigen, aber userSegs sichern (nur beim ersten Mal)
+  if(window._userSegs===null)window._userSegs=vSegs.slice()
   vSegs=Array(64).fill(null)
   for(let i=0;i<64;i++){const st=i*4;const site=vSt.find(it=>{const b=i2n(it.netz)&255;return st>=b&&st<b+hT(it.c)});if(site)vSegs[i]=vSt.indexOf(site)}
   circState.res=null;circPaint()
@@ -423,11 +423,11 @@ window.addEventListener('resize',circPaint)
 function vlsmCirc(){
   let area=document.getElementById('vlsmCA')
   if(!vSt||vSt.length===0)return
-  vSegs=Array(64).fill(null);vSel=0
+  vSegs=Array(64).fill(null);vSel=0;window._userSegs=null
   area.innerHTML=vlsmCircHTML(vBase,vSt)
   setTimeout(drawVCCommon,50)
 }
-function updCnt(){const e=document.getElementById('vCnt');if(e)e.textContent=vSegs.filter(s=>s===vSel).length+' Segmente'}
+function updCnt(){const e=document.querySelector('.pg.act #vCnt');if(e)e.textContent=vSegs.filter(s=>s===vSel).length+' Segmente'}
 function vlsmCircCheck(){
   const cv=document.querySelector('.pg.act canvas');if(!cv)return
   let ri=0,fa=0,fe=0,cf=0;const res=[]
@@ -491,7 +491,7 @@ function prfS(){
   const vB='222.10.150.0';const vBC=24
   const vL=[{name:'London',h:24},{name:'Tokyo',h:12},{name:'Boston',h:6},{name:'WAN 1',h:2},{name:'WAN 2',h:2}]
   let vi=i2n(vB);const vR=vL.map(it=>{const c=c4h(it.h);const size=hT(c);const start=Math.ceil(vi/size)*size;const n=n2i(start);vi=start+size;return{...it,c,netz:n,bc:n2i(vi-1)}})
-  pS={tR,mR,vR,end,vSt:vR};pSegs=Array(64).fill(null)
+  pS={tR,mR,vR,end,vSt:vR};pSegs=Array(64).fill(null);window._userSegs=null
   document.getElementById('sb').innerHTML='<span class="tm" id="tm">30:00</span>'
   prfR(end,vB,vBC)
   pT=setInterval(()=>{const d=end-Date.now();if(d<=0){clearInterval(pT);const e=document.getElementById('tm');if(e)e.textContent='00:00';prfA();return}
@@ -515,7 +515,7 @@ function prfR(end,vB,vBC){
 function prfA(){
   clearInterval(pT);const s=pS;if(!s)return;let gP=0,gM=0,ds=[]
   const tMx=25;let tP=0
-     s.tR.forEach((r,i)=>{function okP(v){if(!v)return false;const vv=v.toLowerCase().trim();return r.p?(vv==='p'||vv==='privat'):(vv==='ö'||vv==='oe'||vv==='öffentlich'||vv==='public')}
+     s.tR.forEach((r,i)=>{function okP(v){if(!v)return false;const vv=v.toLowerCase().trim();return r.p?(vv==='p'||vv==='privat'||vv==='private'):(vv==='ö'||vv==='oe'||vv==='öffentlich'||vv==='oeffentlich'||vv==='public')}
        if(okP(document.getElementById('pt_p'+i).value))tP+=.25;if(document.getElementById('pt_c'+i).value.trim().toUpperCase()===r.cl)tP+=.25
        if(document.getElementById('pt_n'+i).value.trim()===r.nw)tP+=1;if(document.getElementById('pt_l'+i).value.trim()===r.lh)tP+=1})
      ds.push(['IP-Adressierung',tP,tMx]);gP+=tP;gM+=tMx
@@ -523,9 +523,9 @@ function prfA(){
      ds.push(['Subnetting',mP,mMx]);gP+=mP;gM+=mMx
      const vMx=5;let vP=0
      s.vR.forEach((it,i)=>{const n=document.getElementById('pv_n'+i);const c=document.getElementById('pv_c'+i);if(n&&n.value.trim()===it.netz)vP+=.5;if(c&&c.value.trim().replace('/','')===it.c+'')vP+=.5})
-     const vStL=s.vR;let cR=0
-     for(let i=0;i<64;i++){const s2=i*4;const so=vStL.find(it=>{const st=i2n(it.netz)&255;return s2>=st&&s2<st+hT(it.c)});const ma=pSegs[i];if(ma!==null&&so&&ma===vStL.indexOf(so))cR++}
-     const cMx=2.5;const cP=Math.min(cR*0.5,cMx)
+     const vStL=s.vR;let cR=0,cB=0
+     for(let i=0;i<64;i++){const s2=i*4;const so=vStL.find(it=>{const st=i2n(it.netz)&255;return s2>=st&&s2<st+hT(it.c)});const ma=pSegs[i];if(ma!==null&&so&&ma===vStL.indexOf(so))cR++;else if(ma!==null&&!so)cB++}
+     const cTotal=vStL.reduce((s,it)=>s+hT(it.c)/4,0);const cMx=2.5;const cP=cTotal>0?Math.max(0,Math.min((cR-cB)/cTotal*cMx,cMx)):0
      ds.push(['VLSM Eingabe',vP,vMx]);ds.push(['Circle',cP,cMx]);gP+=vP+cP;gM+=vMx+cMx
   const pr=gM>0?Math.round(gP/gM*100):0;const note=nf(pr);sA('Prüfung',gP,gM)
   const ring=`<div class="ring" style="background:conic-gradient(${pr>=50?'var(--green)':'var(--red)'} 0deg ${pr*3.6}deg, var(--bg3) ${pr*3.6}deg 360deg);box-shadow:0 0 20px ${pr>=50?'rgba(0,230,118,.2)':'rgba(255,23,68,.2)'}"><div class="ring-in"><div class="rp" style="color:${pr>=50?'var(--green)':'var(--red)'}">${pr}%</div><div class="rn">Note ${note.toFixed(1)}</div></div></div>`
