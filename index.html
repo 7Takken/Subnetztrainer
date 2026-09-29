@@ -341,7 +341,6 @@ function vlsmC(){
     document.getElementById('vn'+i).className=oN?'ok':'fail';document.getElementById('vc'+i).className=oC?'ok':'fail'
     const l=document.getElementById('vr'+i)
     if(oN&&oC){l.textContent='✓ ✓';l.style.color='var(--green)';p+=2}else{l.textContent=(oN?'':'✗ '+it.netz)+(oC?'':' /'+it.c);l.style.color='var(--red)'}
-    document.getElementById('vn'+i).disabled=true;document.getElementById('vc'+i).disabled=true
   })
   document.getElementById('sb').textContent=`${p}/${mx}`
   if(vSegs.length>0)vlsmCircCheck()
@@ -356,7 +355,7 @@ function vlsmL(){
   // Lösung anzeigen, aber userSegs sichern für spätere Klicks
   window._userSegs=vSegs.slice()
   vSegs=Array(64).fill(null)
-  for(let i=0;i<64;i++){const st=i*4;const so=vSt.findIndex(it=>{const b=i2n(it.netz)&255;return st>=b&&st<b+hT(it.c)});if(so>=0)vSegs[i]=so}
+  for(let i=0;i<64;i++){const st=i*4;const site=vSt.find(it=>{const b=i2n(it.netz)&255;return st>=b&&st<b+hT(it.c)});if(site)vSegs[i]=vSt.indexOf(site)}
   circState.res=null;circPaint()
 }
 
